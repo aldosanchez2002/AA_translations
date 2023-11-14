@@ -74,7 +74,7 @@ def dijkstraMST(graph, start, end):
     # print(min_cost)
     # print(MST[start],MST[end])
     # print(min_cost[start],min_cost[end])
-
+    #print(MST)
     path = get_path(MST, start, end)
     return path, min_cost[end]
 
@@ -104,8 +104,9 @@ def choose_node(min_cost, visited):
             min_cost_value = cost
     return min_cost_node
 
-def test():
+def test1():
     langs = ['alaw', 'ulaw', 'slin', 'g722', 'slin16', 'g729', 'g7222', 'g723', 'clearmode', 'lpc10', 'ilbc', 'speex', 'speex16', 'g726', 'gsm']
+    ans1 = []
     for lang1 in langs:
         for lang2 in langs:
             if lang1 != lang2:
@@ -114,9 +115,13 @@ def test():
                     print("No translation path was found from {} to {}.".format(lang1, lang2))
                 else:
                     print("From {} to {}, \n\tPath: {} \n\tMinCost {}.".format(lang1, lang2, "->".join(path), cost))
+                    ans1.append(cost)
+                    #pass
+
+    return ans1
 
 if __name__ == '__main__':
-    test()
+    ans1 = test1()
     # if len(sys.argv) < 3:
     #     print("Not enough arguments. Give input and output codec.")
     #     sys.exit(1)
