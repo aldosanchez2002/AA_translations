@@ -35,49 +35,55 @@ translators = { ("alaw", "ulaw") : 1,
                 ("slin", "gsm") : 6
                }
 
-def translation_path(in_codec, out_codec):
+def translationPath(in_codec, out_codec):
     if in_codec == out_codec:
         return [], 0
-    graph = edges_to_graph(translators)
-    print(graph)
-    path, cost = dijstras_shortest_path(graph, in_codec, out_codec)
+    graph = edgesToGraph(translators)
+    path, cost = dijkstra(graph, in_codec, out_codec)
     return path, cost
 
-def edges_to_graph(edges_dict):
-    graph = {} 
-    for source_dest,cost in edges_dict.items():
-        source,dest = source_dest
+def edgesToGraph(edges_dict):
+    graph = {}
+    for source_dest, cost in edges_dict.items():
+        source, dest = source_dest
         if source not in graph:
             graph[source] = {}
         graph[source][dest] = cost
-    # print([x for x in graph.keys()])
-    # for k,v in graph.items():
-    #     print(k,v)
     return graph
 
-def dijstras_shortest_path(graph, start, end):
+def dijkstraMST(graph, start, end):
     min_cost = {}
     for node in graph.keys():
         min_cost[node] = float('inf')
     min_cost[start] = 0
     visited = set()
+    node = start
     MST = {}
     prev = None
     while min_cost[end] == float('inf'):
-        print("\n",min_cost)
-        node = chooseNode(min_cost, visited)
+        if node is None:
+            break
+        for k,v in min_cost.items():
+            print("\t",k,v)
         MST[node] = prev
         prev = node
         visited.add(node)
         for neighbor, cost in graph[node].items():
+            print("neighbor: ", neighbor)
             min_cost[neighbor] = min(min_cost[node] + cost, min_cost[neighbor])
-    MST[node] = prev   
+        node = choose_node(min_cost, visited)
+    return MST, min_cost
+
+def dijkstra(graph, start, end):
+    MST, costs = dijkstraMST(graph, start, end)
     path = get_path(MST, start, end)
-    return path, min_cost[end]
+    cost = costs[end]
+    return path, cost
 
 def get_path(MST, start, end):
-    print(MST)
-    path = []
+    if end not in MST:
+        return []  # No valid path found
+    path = [end]
     node = end
     while node != start:
         path.append(node)
@@ -86,7 +92,7 @@ def get_path(MST, start, end):
     path.reverse()
     return path
 
-def chooseNode(min_cost, visited):
+def choose_node(min_cost, visited):
     min_cost_node = None
     min_cost_value = float('inf')
     for node, cost in min_cost.items():
@@ -96,27 +102,25 @@ def chooseNode(min_cost, visited):
     return min_cost_node
 
 def test():
-    langs= ['alaw', 'ulaw', 'slin', 'g722', 'slin16', 'g729', 'g7222', 'g723', 'clearmode', 'lpc10', 'ilbc', 'speex', 'speex16', 'g726', 'gsm']
+    langs = ['alaw', 'ulaw', 'slin', 'g722', 'slin16', 'g729', 'g7222', 'g723', 'clearmode', 'lpc10', 'ilbc', 'speex', 'speex16', 'g726', 'gsm']
+    langs = ['alaw', 'ulaw']
     for lang1 in langs:
         for lang2 in langs:
             if lang1 != lang2:
-                path, cost = translation_path(lang1, lang2)
+                path, cost = translationPath(lang1, lang2)
                 if cost == float('inf'):
-                    continue
                     print("No translation path was found from {} to {}.".format(lang1, lang2))
                 else:
-                    print("From {} to {}\t, Path:{},  \tMin Cost {}.".format(lang1, lang2, path, cost))
+                    print("From {} to {}, Path: {}, Min Cost {}.".format(lang1, lang2, path, cost))
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     test()
-    sys.exit(0)
-    if len(sys.argv) < 3:
-        print("Not enough arguments. Give input and output codec.")
-        sys.exit(1)
-    try:
-        path, cost = translation_path(sys.argv[1], sys.argv[2])
-        print("The translation path from {} to {} goes starts at {}, passes through the intermediate codecs {} and ends up at {}, all with a cost of {}.".format(sys.argv[1], sys.argv[2], sys.argv[1], path, sys.argv[2], cost))
-    except:
-        print("No translation path was found for a {} to {} conversion.".format(sys.argv[1], sys.argv[2]))
-        sys.exit(1)
-    sys.exit(0)
+    # if len(sys.argv) < 3:
+    #     print("Not enough arguments. Give input and output codec.")
+    #     sys.exit(1)
+    # try:
+    #     path, cost = translation_path(sys.argv[1], sys.argv[2])
+    #     print("The translation path from {} to {} goes starts at {}, passes through the intermediate codecs {} and ends up at {}, all with a cost of {}.".format(sys.argv[1], sys.argv[2], sys.argv[1], path, sys.argv[2], cost))
+    # except:
+    #     print("No translation path was found for a {} to {} conversion.".format(sys.argv[1], sys.argv[2]))
+    #     sys.exit(1)
