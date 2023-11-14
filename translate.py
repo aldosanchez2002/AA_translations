@@ -39,7 +39,7 @@ def translationPath(in_codec, out_codec):
     if in_codec == out_codec:
         return [], 0
     graph = edgesToGraph(translators)
-    path, cost = dijkstra(graph, in_codec, out_codec)
+    path, cost = dijkstraMST(graph, in_codec, out_codec)
     return path, cost
 
 def edgesToGraph(edges_dict):
@@ -52,45 +52,48 @@ def edgesToGraph(edges_dict):
     return graph
 
 def dijkstraMST(graph, start, end):
-    min_cost = {}
+    min_cost = dict()
     for node in graph.keys():
         min_cost[node] = float('inf')
+        
     min_cost[start] = 0
     visited = set()
-    node = start
+    prev, node = None, start
     MST = {}
-    prev = None
-    while min_cost[end] == float('inf'):
-        if node is None:
-            break
-        for k,v in min_cost.items():
-            print("\t",k,v)
+    while end not in visited:
+        visited.add(node)
         MST[node] = prev
         prev = node
-        visited.add(node)
         for neighbor, cost in graph[node].items():
-            print("neighbor: ", neighbor)
             min_cost[neighbor] = min(min_cost[node] + cost, min_cost[neighbor])
         node = choose_node(min_cost, visited)
-    return MST, min_cost
+        if not node:
+            break
+    MST[node] = prev
+    # print(MST)
+    # print(min_cost)
+    # print(MST[start],MST[end])
+    # print(min_cost[start],min_cost[end])
 
-def dijkstra(graph, start, end):
-    MST, costs = dijkstraMST(graph, start, end)
     path = get_path(MST, start, end)
-    cost = costs[end]
-    return path, cost
+    return path, min_cost[end]
 
 def get_path(MST, start, end):
     if end not in MST:
-        return []  # No valid path found
-    path = [end]
+        return []
+    path = []
     node = end
+    visited = set()
     while node != start:
+        if node in visited:
+            return []  # Node already in path, return empty path
         path.append(node)
+        visited.add(node)
         node = MST[node]
     path.append(start)
     path.reverse()
     return path
+
 
 def choose_node(min_cost, visited):
     min_cost_node = None
@@ -103,7 +106,6 @@ def choose_node(min_cost, visited):
 
 def test():
     langs = ['alaw', 'ulaw', 'slin', 'g722', 'slin16', 'g729', 'g7222', 'g723', 'clearmode', 'lpc10', 'ilbc', 'speex', 'speex16', 'g726', 'gsm']
-    langs = ['alaw', 'ulaw']
     for lang1 in langs:
         for lang2 in langs:
             if lang1 != lang2:
@@ -111,7 +113,7 @@ def test():
                 if cost == float('inf'):
                     print("No translation path was found from {} to {}.".format(lang1, lang2))
                 else:
-                    print("From {} to {}, Path: {}, Min Cost {}.".format(lang1, lang2, path, cost))
+                    print("From {} to {}, \n\tPath: {} \n\tMinCost {}.".format(lang1, lang2, "->".join(path), cost))
 
 if __name__ == '__main__':
     test()
