@@ -35,9 +35,10 @@ translators = { ("alaw", "ulaw") : 1,
                 ("slin", "gsm") : 6
                }
 
-def translationPath(in_codec, out_codec, graph):
+def translationPath(in_codec, out_codec):
     if in_codec == out_codec:
         return [], 0
+    graph = edgesToGraph(translators)
     path, cost = dijkstra(graph, in_codec, out_codec)
     return path, cost
 
@@ -103,11 +104,10 @@ def choose_node(min_cost, visited):
 def test():
     langs = ['alaw', 'ulaw', 'slin', 'g722', 'slin16', 'g729', 'g7222', 'g723', 'clearmode', 'lpc10', 'ilbc', 'speex', 'speex16', 'g726', 'gsm']
     langs = ['alaw', 'ulaw']
-    graph = edgesToGraph(translators)
     for lang1 in langs:
         for lang2 in langs:
             if lang1 != lang2:
-                path, cost = translationPath(lang1, lang2, graph)
+                path, cost = translationPath(lang1, lang2)
                 if cost == float('inf'):
                     print("No translation path was found from {} to {}.".format(lang1, lang2))
                 else:
